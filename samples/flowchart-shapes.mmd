@@ -1,0 +1,33 @@
+---
+config:
+  theme: light
+---
+flowchart LR
+
+subgraph INPUT[Request entry]
+  A([Start])
+  B[/Credentials/]
+  C{{Normalize}}
+end
+subgraph AUTH[Authentication]
+  D[[Validate password]]
+  E{Valid?}
+  F[(User database)]
+end
+subgraph RESULT[Session outcome]
+  G((Session))
+  H[/Manual review\]
+  I(((Signed in)))
+end
+
+A --> B
+B --> C
+C --> D
+D -->|Private| F
+D --> E
+E -->|Accepted| G
+E -.->|Rejected| H
+G --> I
+
+classDef success fill:#edf7ef,stroke:#48815b,color:#274931
+class G,I success

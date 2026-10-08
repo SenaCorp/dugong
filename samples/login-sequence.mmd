@@ -1,0 +1,23 @@
+sequenceDiagram
+    autonumber
+
+    actor User
+    participant Web as Web App
+    participant Auth as Auth API
+    participant DB as PostgreSQL
+    participant Session as Session Store
+
+    User->>Web: Submit email and password
+    Web->>Auth: POST /login
+    Auth->>DB: Find account by email
+    DB-->>Auth: Account and password hash
+    Auth->>Auth: Verify password hash
+    alt Password valid
+        Auth->>Session: Create session
+        Session-->>Auth: Session ID
+        Auth-->>Web: 200 OK + HttpOnly session cookie
+        Web-->>User: Show dashboard
+    else Password incorrect
+        Auth-->>Web: 401 Unauthorized
+        Web-->>User: Show invalid password error
+    end

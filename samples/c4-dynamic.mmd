@@ -1,0 +1,14 @@
+C4Dynamic
+title Login · Request journey
+Person(user, "User", "Signs in to their account")
+System_Boundary(platform, "Identity Platform") {
+ Container(web, "Login Page", "React", "Collects login credentials")
+ Container(auth, "Auth API", "Node.js", "Verifies identity and creates a session")
+ ContainerDb(db, "Identity Store", "PostgreSQL", "Stores accounts and password hashes")
+}
+RelIndex(1, user, web, "Enters credentials")
+RelIndex(2, web, auth, "POST /login", "HTTPS")
+RelIndex(3, auth, db, "Looks up account", "SQL")
+RelIndex(4, db, auth, "Returns account")
+RelIndex(5, auth, web, "Returns session", "HTTPS")
+RelIndex(6, web, user, "Opens dashboard")

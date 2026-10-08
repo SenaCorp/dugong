@@ -1,0 +1,8 @@
+services:
+  web:
+    image: flow-lab:local
+    build:
+      context: .
+    ports:
+      - "${FLOWLAB_PORT:-8080}:8080"
+    restart: unless-stopped

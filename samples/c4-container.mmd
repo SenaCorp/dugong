@@ -1,0 +1,18 @@
+C4Container
+title Order platform · Containers
+Person(customer, "Customer", "Shops from the web")
+System_Boundary(platform, "Order Platform") {
+ Container(web, "Storefront", "React", "Browse products and manage orders")
+ Container(api, "Order API", "Node.js", "Validates and coordinates orders")
+ ContainerDb(db, "Orders Database", "PostgreSQL", "Stores orders and payment status")
+ ContainerQueue(queue, "Order Events", "RabbitMQ", "Buffers fulfillment requests")
+ Container(worker, "Fulfillment Worker", "Go", "Processes orders asynchronously")
+}
+System_Ext(payments, "Payment Provider", "Secure payment processing")
+Rel(customer, web, "Uses", "HTTPS")
+Rel(web, api, "Submits order", "JSON / HTTPS")
+Rel(api, db, "Reads and writes", "SQL")
+Rel(api, queue, "Publishes events", "AMQP")
+Rel(queue, worker, "Delivers events", "AMQP")
+Rel(worker, db, "Updates status", "SQL")
+Rel(api, payments, "Charges customer", "HTTPS")

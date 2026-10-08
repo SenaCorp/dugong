@@ -1,0 +1,9 @@
+C4Context
+title Order platform · System context
+Person(customer, "Customer", "Browses products and places orders")
+System(platform, "Order Platform", "A single place to shop, pay and track deliveries")
+System_Ext(payments, "Payment Provider", "Processes card payments securely")
+System_Ext(delivery, "Delivery Partner", "Ships orders to customers")
+Rel(customer, platform, "Places orders", "HTTPS")
+Rel(platform, payments, "Requests payment", "API")
+Rel(platform, delivery, "Schedules delivery", "API")

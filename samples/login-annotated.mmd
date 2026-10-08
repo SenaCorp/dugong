@@ -1,0 +1,40 @@
+sequenceDiagram
+    autonumber
+    actor User
+    box Frontend
+        participant Web as Web App
+    end
+    box Backend
+        participant Auth as Auth API
+        participant DB as PostgreSQL
+        participant Session as Session Store
+    end
+
+    Note over User,Web: Credentials travel over HTTPS
+    User->>Web: Submit credentials
+    Web->>Auth: POST /login
+    activate Auth
+    Auth->>+DB: Find account
+    DB-->>-Auth: Account and password hash
+    Auth->>Auth: Verify password
+    deactivate Auth
+
+    alt Password valid
+        activate Auth
+        Note right of Auth: Create a secure session
+        loop Retry session write (up to 2 attempts)
+            Auth->>+Session: Save session
+            Session-->>-Auth: Session persisted
+        end
+        opt Remember this device
+            Auth->>+DB: Save trusted device
+            DB-->>-Auth: Device saved
+        end
+        deactivate Auth
+        Auth-->>Web: 200 OK + session cookie
+        Web-->>User: Show dashboard
+    else Password incorrect
+        Note over Web,Auth: Authentication failed — no session created
+        Auth-->>Web: 401 Unauthorized
+        Web-->>User: Show password error
+    end

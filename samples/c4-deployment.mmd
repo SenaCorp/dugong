@@ -1,0 +1,20 @@
+C4Deployment
+title Order platform · Production deployment
+Deployment_Node(cloud, "Production Cloud", "AWS", "Primary production environment") {
+ Deployment_Node(edge, "Edge", "CDN") {
+  Container(web, "Storefront", "React / static assets", "Serves the customer interface")
+ }
+ Deployment_Node(compute, "Application Cluster", "Containers") {
+  Container(api, "Order API", "Node.js", "Two application replicas")
+  Container(worker, "Fulfillment Worker", "Go", "Processes order events")
+ }
+ Deployment_Node(data, "Managed Data", "Private network") {
+  ContainerDb(db, "Orders Database", "PostgreSQL", "Encrypted persistent storage")
+  ContainerQueue(queue, "Order Events", "RabbitMQ", "Durable event queue")
+ }
+}
+Rel(web, api, "Calls API", "HTTPS")
+Rel(api, db, "Reads and writes", "SQL")
+Rel(api, queue, "Publishes events", "AMQP")
+Rel(queue, worker, "Delivers events", "AMQP")
+Rel(worker, db, "Updates orders", "SQL")

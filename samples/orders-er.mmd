@@ -1,0 +1,39 @@
+erDiagram
+    direction LR
+
+    CUSTOMER {
+        uuid id PK
+        string email UK
+        string display_name
+        timestamp created_at
+    }
+    ORDER {
+        uuid id PK
+        uuid customer_id FK
+        string status
+        decimal(10,2) total
+    }
+    ORDER_ITEM {
+        uuid id PK
+        uuid order_id FK
+        uuid product_id FK
+        int quantity
+        decimal(10,2) unit_price
+    }
+    PRODUCT {
+        uuid id PK
+        string sku UK
+        string name
+        decimal(10,2) price
+    }
+    PAYMENT {
+        uuid id PK
+        uuid order_id FK, UK
+        string provider_reference UK
+        string status
+    }
+
+    CUSTOMER ||--o{ ORDER : places
+    ORDER ||--|{ ORDER_ITEM : contains
+    PRODUCT ||..o{ ORDER_ITEM : appears_in
+    ORDER ||..o| PAYMENT : has

@@ -1,0 +1,27 @@
+flowchart LR
+
+classDef client fill:#eef3fb,stroke:#426a9d,color:#244363
+classDef service fill:#edf7f3,stroke:#2d7b73,color:#204c45,stroke-width:1.5px
+classDef async fill:#fbf5e8,stroke:#97681f,color:#6e4b16
+classDef storage fill:#f4effa,stroke:#795ba5,color:#533779
+classDef external fill:#f8f8f3,stroke:#798574,color:#596752,stroke-dasharray:5 3
+
+USER[Customer]:::client
+API(API Gateway):::service
+ORDERS[Order Service]:::service
+DB[(Orders Database)]:::storage
+QUEUE(Message Queue):::async
+WORKER[Worker]:::async
+PAYMENTS[Payment Provider]:::external
+METRICS[Metrics]:::external
+
+USER -->|HTTPS| API
+API ==>|Main request| ORDERS
+ORDERS -->|Private| DB
+ORDERS -.->|Publish event| QUEUE
+QUEUE -.->|Consume event| WORKER
+WORKER -->|Private| DB
+ORDERS <-->|Payment API| PAYMENTS
+API --o|Telemetry| METRICS
+WORKER --x|Failure signal| METRICS
+PAYMENTS ---|Shared contract| METRICS

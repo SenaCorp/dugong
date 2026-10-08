@@ -1,0 +1,15 @@
+C4Component
+title Order API · Components
+Container(web, "Storefront", "React", "Customer interface")
+Container_Boundary(api, "Order API") {
+ Component(controller, "Order Controller", "HTTP handler", "Accepts and validates incoming requests")
+ Component(service, "Order Service", "Domain service", "Applies business rules and coordinates payment")
+ Component(repository, "Order Repository", "Data access", "Persists orders with transaction safety")
+}
+ContainerDb(db, "Orders Database", "PostgreSQL", "Durable order storage")
+System_Ext(payments, "Payment Provider", "Card processing")
+Rel(web, controller, "POST /orders", "HTTPS")
+Rel(controller, service, "Creates order")
+Rel(service, repository, "Saves order")
+Rel(repository, db, "Reads and writes", "SQL")
+BiRel(service, payments, "Payment request / result", "HTTPS")
