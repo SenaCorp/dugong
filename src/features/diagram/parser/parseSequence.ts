@@ -19,17 +19,17 @@ function parseMessage(line: string): { message: Omit<DiagramEdge, 'id'>; activat
   const colon = line.indexOf(':')
   if (colon < 0) throw new Error('Use A->>B: Message or A-->>B: Response.')
   const connection = line.slice(0, colon).trim()
-  const dashed = connection.includes('-->>')
-  const arrow = dashed ? '-->>' : '->>'
+  const arrow = connection.includes('-->>') ? '-->>' : connection.includes('->>') ? '->>' : '--x'
+  const dashed = arrow.startsWith('--')
   const parts = connection.split(arrow)
-  if (parts.length !== 2) throw new Error('Supported message arrows are ->> and -->>.')
+  if (parts.length !== 2) throw new Error('Supported message arrows are ->>, -->>, and --x.')
   const source = validateId(parts[0].trim())
   const destination = parts[1].trim()
   const activation = destination.startsWith('+') ? '+' : destination.startsWith('-') ? '-' : undefined
   const target = validateId(activation ? destination.slice(1).trim() : destination)
   const label = line.slice(colon + 1).trim()
   if (!label) throw new Error('Message text cannot be empty.')
-  return { message: { source, target, label: label.replace(/<br\s*\/?\s*>/gi, '\n'), dashed }, activation }
+  return { message: { source, target, label: label.replace(/<br\s*\/?\s*>/gi, '\n'), dashed, ...(arrow === '--x' ? { sequenceEndMarker: 'cross' as const } : {}) }, activation }
 }
 
 export function parseSequence(source: string): ParseResult {

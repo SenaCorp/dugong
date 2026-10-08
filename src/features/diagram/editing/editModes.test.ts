@@ -2,6 +2,25 @@ import { expect, it } from 'vitest'
 import { editSource } from './editSource'
 import { parseDiagram } from '../parser/parseDiagram'
 
+it('edits lost-message labels and implicit participants without changing the connector', () => {
+  const source = 'sequenceDiagram\nBank--xTX: Timeout\nTX->>Bank: Retry'
+  const updated = editSource(source, { kind: 'edgeLabel', id: 'sequence-1', label: 'Unknown Result' })
+  expect(updated).toBe(source.replace(': Timeout', ': Unknown Result'))
+  const next = editSource(updated, { kind: 'edgeLabel', id: 'sequence-2', label: 'Check status' })
+  expect(next).toContain('TX->>Bank: Check status')
+  const renamed = parseDiagram(editSource(next, { kind: 'nodeLabel', id: 'TX', label: 'Transaction' }))
+  expect(renamed.errors).toEqual([])
+  expect(renamed.graph.nodes.map(node => node.id)).toEqual(['Bank', 'TX'])
+  expect(renamed.graph.nodes[1].label).toBe('Transaction')
+})
+
+it('deletes lost messages when removing a participant and retains unrelated messages', () => {
+  const source = 'sequenceDiagram\nBank--xTX: Timeout\nTX->>API: Check\nAPI->>API: Work'
+  const updated = editSource(source, { kind: 'deleteNode', id: 'Bank' })
+  expect(updated).not.toContain('Bank--x')
+  expect(parseDiagram(updated).graph.edges.map(edge => edge.label)).toEqual(['Check', 'Work'])
+})
+
 it('edits C4 labels and multiline call arguments without touching technology/comments', () => {
   const source = 'C4Container\nContainer(api,\n  "Old", "Node.js", "Description") %% keep\nPerson(user, "User")\nRel(user, api, "Request", "HTTPS")'
   const updated = editSource(source, { kind: 'nodeLabel', id: 'api', label: 'Gateway "Public"' })

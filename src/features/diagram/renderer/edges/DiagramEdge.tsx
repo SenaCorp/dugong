@@ -24,8 +24,9 @@ export const DiagramEdge = memo(function DiagramEdge({ id, data, label, markerEn
   return <>
     <g style={themeStyle}>
       {data.active && <path d={path} className="edge-glow" aria-hidden="true" />}
-      <BaseEdge id={id} path={path} markerStart={markerStart} markerEnd={markerEnd} className={className} interactionWidth={editing && !editing.disabled ? 16 : 0} />
+      <BaseEdge id={id} path={path} markerStart={markerStart} markerEnd={data.sequenceEndMarker === 'cross' ? undefined : markerEnd} className={className} interactionWidth={editing && !editing.disabled ? 16 : 0} />
       {data.active && <path d={path} pathLength={data.playback ? 100 : undefined} className={`edge-light ${data.playback ? 'is-playing' : ''}`} style={data.playback ? { animationDuration: `${MESSAGE_DURATION}ms` } : undefined} aria-hidden="true" />}
+      {data.sequenceEndMarker === 'cross' && data.points.length > 0 && <FlowEndpoint marker="cross" point={flowEndpointPoint(data.points, 'end')} active={data.active} dimmed={data.dimmed} />}
       {data.flow && data.points.length > 0 && <>
         <FlowEndpoint marker={data.flow.startMarker} point={flowEndpointPoint(data.points, 'start')} active={data.active} dimmed={data.dimmed} />
         <FlowEndpoint marker={data.flow.endMarker} point={flowEndpointPoint(data.points, 'end')} active={data.active} dimmed={data.dimmed} />

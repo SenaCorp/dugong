@@ -27,6 +27,9 @@ it('moves sequence participants horizontally with their lifelines and messages',
   const result = applyManualPositions(base, { A: { x: a.position.x - 100, y: 999 } })
   expect(result.nodes.find(node => node.id === 'A')?.position.y).toBe(a.position.y)
   expect(result.nodes.find(node => node.id === ':lifeline:A')!.position.x).toBe(base.nodes.find(node => node.id === ':lifeline:A')!.position.x - 100)
+  const footer = result.nodes.find(node => node.id === ':footer:A')!
+  expect(footer.position.x).toBe(a.position.x - 100)
+  expect(footer.position.y).toBe(base.nodes.find(node => node.id === ':footer:A')!.position.y)
   expect(result.edges[0].data!.points[0].x).toBe(base.edges[0].data!.points[0].x - 100)
   expect(result.edges[0].data!.points[0].y).toBe(base.edges[0].data!.points[0].y)
 })

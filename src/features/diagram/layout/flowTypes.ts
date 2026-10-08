@@ -32,11 +32,12 @@ export type DiagramEdgeData = {
   theme?: GroupTheme
   sequenceIndex?: number
   dashed?: boolean
+  sequenceEndMarker?: 'cross'
   playback?: boolean
   sequenceBranches?: SequenceBranchReference[]
   er?: ERRelationship
   flow?: FlowConnection
 }
-export type FlowNode = Node<DiagramNodeData, DiagramNodeShape | 'group' | 'lifeline' | 'c4' | 'sequenceFrame' | 'entity' | 'sequenceNote' | 'activation' | 'sequenceBox'>
+export type FlowNode = Node<DiagramNodeData, DiagramNodeShape | 'group' | 'lifeline' | 'c4' | 'sequenceFrame' | 'entity' | 'sequenceNote' | 'activation' | 'sequenceBox' | 'sequenceFooter'>
 export type FlowEdge = Edge<DiagramEdgeData, 'diagram'>
 export interface LayoutDiagram { theme?: 'light' | 'dark'; nodes: FlowNode[]; edges: FlowEdge[]; kind?: 'sequence' | 'c4' | 'er'; c4Type?: C4DiagramType; title?: string; sequenceFragments?: SequenceFragment[] }

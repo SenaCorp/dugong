@@ -34,3 +34,11 @@ it('uses the same ELK route for glow, light, and the visible edge', () => {
   expect(routes).toHaveLength(3)
   expect(new Set(routes).size).toBe(1)
 })
+
+it('renders a dashed lost-message cross at the target and retains highlight state', () => {
+  const markup = renderEdge(true, { sequenceIndex: 0, dashed: true, sequenceEndMarker: 'cross', dimmed: true })
+  expect(markup).toContain('is-sequence is-response')
+  expect(markup).toContain('aria-label="cross connection endpoint"')
+  expect(markup).toContain('transform="translate(194, 50)"')
+  expect(markup).toContain('flow-endpoint is-active is-dimmed')
+})

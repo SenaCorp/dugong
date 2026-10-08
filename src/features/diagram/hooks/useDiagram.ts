@@ -1,3 +1,4 @@
+import { isDecoration } from '../renderer/isDecoration'
 import { positionsForSourceEdit } from '../editing/editPositions'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { parseDiagram } from '../parser/parseDiagram'
@@ -94,7 +95,7 @@ export function useDiagram() {
   function applyEdit(action: SourceEdit) {
     const updated = editSource(source, action)
     const current = absolutePositions(adjusted.layout.nodes)
-    const positions = Object.fromEntries(adjusted.layout.nodes.filter(node => !['group', 'lifeline', 'activation', 'sequenceBox', 'sequenceFrame', 'sequenceNote'].includes(node.type!)).map(node => [node.id, current[node.id]]))
+    const positions = Object.fromEntries(adjusted.layout.nodes.filter(node => !isDecoration(node)).map(node => [node.id, current[node.id]]))
     const nextPositions = positionsForSourceEdit(action, state.graph, parseDiagram(updated).graph, positions)
     document.commit(() => ({ source: updated, positions: nextPositions }))
     if (['addNode', 'duplicateNode', 'deleteNode'].includes(action.kind)) setResetVersion(version => version + 1)

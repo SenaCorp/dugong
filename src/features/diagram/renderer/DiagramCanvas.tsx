@@ -21,7 +21,7 @@ import { LifelineNode } from './nodes/LifelineNode'
 import { DiagramEdge } from './edges/DiagramEdge'
 import { useNodeHighlight } from '../hooks/useNodeHighlight'
 
-const nodeTypes = { stadium: editableNode(DiagramNode), circle: editableNode(DiagramNode), doubleCircle: editableNode(DiagramNode), hexagon: editableNode(DiagramNode), parallelogram: editableNode(DiagramNode), trapezoid: editableNode(DiagramNode), subroutine: editableNode(DiagramNode), sequenceNote: SequenceDecorationNode, activation: SequenceDecorationNode, sequenceBox: SequenceDecorationNode, entity: editableNode(EntityNode), sequenceFrame: SequenceFrameNode, c4: editableNode(C4Node), rectangle: editableNode(RectangleNode), rounded: editableNode(RoundedNode), diamond: editableNode(DiamondNode), database: editableNode(DatabaseNode), group: GroupNode, lifeline: LifelineNode } satisfies NodeTypes
+const nodeTypes = { sequenceFooter: DiagramNode, stadium: editableNode(DiagramNode), circle: editableNode(DiagramNode), doubleCircle: editableNode(DiagramNode), hexagon: editableNode(DiagramNode), parallelogram: editableNode(DiagramNode), trapezoid: editableNode(DiagramNode), subroutine: editableNode(DiagramNode), sequenceNote: SequenceDecorationNode, activation: SequenceDecorationNode, sequenceBox: SequenceDecorationNode, entity: editableNode(EntityNode), sequenceFrame: SequenceFrameNode, c4: editableNode(C4Node), rectangle: editableNode(RectangleNode), rounded: editableNode(RoundedNode), diamond: editableNode(DiamondNode), database: editableNode(DatabaseNode), group: GroupNode, lifeline: LifelineNode } satisfies NodeTypes
 const EMPTY_POSITIONS = {}
 const edgeTypes = { diagram: DiagramEdge } satisfies EdgeTypes
 
@@ -60,7 +60,7 @@ export function DiagramCanvas({ layout: baseLayout, revision, expanded, activeMe
   const edges = useMemo(() => layout.edges.map(edge => ({
     ...edge,
     ...(edge.markerStart ? { markerStart: { type: MarkerType.ArrowClosed, width: 11, height: 11, color: hasFocus && !focusedEdgeIds.has(edge.id) ? '#cfd2ca' : hasFocus && focusedEdgeIds.has(edge.id) ? hoverTheme?.accent ?? '#657c6d' : layout.theme === 'dark' ? '#a5b5b0' : '#737c79' } } : {}),
-    markerEnd: edge.data?.er || (edge.data?.flow && edge.data.flow.endMarker !== 'arrow') ? undefined : { type: MarkerType.ArrowClosed, width: 11, height: 11, color: hasFocus && !focusedEdgeIds.has(edge.id) ? '#cfd2ca' : hasFocus && focusedEdgeIds.has(edge.id) ? hoverTheme?.accent ?? '#657c6d' : layout.theme === 'dark' ? '#a5b5b0' : '#737c79' },
+    markerEnd: edge.data?.sequenceEndMarker === 'cross' || edge.data?.er || (edge.data?.flow && edge.data.flow.endMarker !== 'arrow') ? undefined : { type: MarkerType.ArrowClosed, width: 11, height: 11, color: hasFocus && !focusedEdgeIds.has(edge.id) ? '#cfd2ca' : hasFocus && focusedEdgeIds.has(edge.id) ? hoverTheme?.accent ?? '#657c6d' : layout.theme === 'dark' ? '#a5b5b0' : '#737c79' },
     data: { ...edge.data!, theme: hoverTheme, active: hasFocus && focusedEdgeIds.has(edge.id), dimmed: hasFocus && !focusedEdgeIds.has(edge.id), playback: playbackEdge?.id === edge.id },
   })), [layout.edges, hoverTheme, hasFocus, focusedEdgeIds, playbackEdge, layout.theme])
 
