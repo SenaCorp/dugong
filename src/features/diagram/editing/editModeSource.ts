@@ -39,7 +39,7 @@ function sequenceEdit(source: string, graph: DiagramGraph, action: SourceEdit): 
     // Materialize at the first actual reference, before a same-line implicit sender if necessary.
     const existing = new Set(lines.filter(line => /^(participant|actor)\s+/.test(line.body.trim())).map(line => line.body.trim().split(/\s+/)[1]))
     const reference = lines.find(line => {
-      const message = /^\s*([A-Za-z_][\w-]*)\s*--?>>\s*[+-]?\s*([A-Za-z_][\w-]*)\s*:/.exec(line.body)
+      const message = /^\s*([A-Za-z_][\w-]*)\s*(?:--?>>|--x)\s*[+-]?\s*([A-Za-z_][\w-]*)\s*:/.exec(line.body)
       if (message) return message[1] === action.id || message[2] === action.id
       const note = /^\s*Note\s+(?:over|left\s+of|right\s+of)\s+([^:]+):/i.exec(line.body)
       return note?.[1].split(',').map(id => id.trim()).includes(action.id)
@@ -49,7 +49,7 @@ function sequenceEdit(source: string, graph: DiagramGraph, action: SourceEdit): 
     const definitions = graph.nodes.slice(0, index + 1).filter(node => !existing.has(node.id)).map(node => `participant ${node.id} as ${node.id === action.id ? label : node.label}`).join('\n')
     return replaceRange(source, reference.offset, reference.offset, `${definitions}\n`)
   }
-  const candidates = lines.filter(line => action.kind === 'noteLabel' ? /^Note\s+(?:over|left\s+of|right\s+of)\s+/i.test(line.body.trim()) : /^[A-Za-z_][\w-]*\s*--?>>\s*[+-]?\s*[A-Za-z_][\w-]*\s*:/.test(line.body.trim()))
+  const candidates = lines.filter(line => action.kind === 'noteLabel' ? /^Note\s+(?:over|left\s+of|right\s+of)\s+/i.test(line.body.trim()) : /^[A-Za-z_][\w-]*\s*(?:--?>>|--x)\s*[+-]?\s*[A-Za-z_][\w-]*\s*:/.test(line.body.trim()))
   const index = action.kind === 'noteLabel' ? (graph.sequence?.notes ?? []).findIndex(note => note.id === action.id) : graph.edges.findIndex(edge => edge.id === action.id)
   const line = candidates[index]
   if (!line) throw new Error('This sequence item no longer exists.')

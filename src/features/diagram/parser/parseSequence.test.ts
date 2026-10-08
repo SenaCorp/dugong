@@ -2,6 +2,23 @@ import { expect, it } from 'vitest'
 import loginSource from '../../../../samples/login-sequence.mmd?raw'
 import { parseDiagram } from './parseDiagram'
 
+it('keeps request arrows when participant IDs contain the lost-message token', () => {
+  const { graph, errors } = parseDiagram('sequenceDiagram\nBank--xEast->>TX: Pay\nBank->>TX--xWest: Pay')
+  expect(errors).toEqual([])
+  expect(graph.edges[0]).toMatchObject({ source: 'Bank--xEast', target: 'TX', dashed: false })
+  expect(graph.edges[1]).toMatchObject({ source: 'Bank', target: 'TX--xWest', dashed: false })
+  expect(graph.edges.every(edge => edge.sequenceEndMarker === undefined)).toBe(true)
+})
+
+it('parses dashed lost messages with hyphenated participants and preserves message order', () => {
+  const { graph, errors } = parseDiagram('sequenceDiagram\nTX->>Bank: Pay\nBank--xTX: Timeout / Unknown Result\nBank-East --x TX-West: Lost\nTX-->>Bank: Retry')
+  expect(errors).toEqual([])
+  expect(graph.edges).toHaveLength(4)
+  expect(graph.edges[1]).toMatchObject({ source: 'Bank', target: 'TX', label: 'Timeout / Unknown Result', dashed: true, sequenceEndMarker: 'cross' })
+  expect(graph.edges[2]).toMatchObject({ source: 'Bank-East', target: 'TX-West', sequenceEndMarker: 'cross' })
+  expect(graph.edges[3]).toMatchObject({ source: 'TX', target: 'Bank', dashed: true })
+})
+
 it('parses the login sample with participants, actor, self-call and ordered messages', () => {
   const { graph, errors } = parseDiagram(loginSource)
   expect(errors).toEqual([])

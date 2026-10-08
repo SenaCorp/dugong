@@ -41,7 +41,7 @@ export function deleteERNode(source: string, id: string) {
     return line.text
   }).join(sourceNewline(source))
 }
-const message = /^\s*([A-Za-z_][\w-]*)\s*(--?>>)\s*([+-]?)\s*([A-Za-z_][\w-]*)\s*:/
+const message = /^\s*([A-Za-z_][\w-]*)\s*((?:--?>>|--x))\s*([+-]?)\s*([A-Za-z_][\w-]*)\s*:/
 export function deleteSequenceNode(source: string, id: string) {
   const lines = sourceLines(source), affected = new Set([id])
   for (const line of lines) {
@@ -59,7 +59,7 @@ export function deleteSequenceNode(source: string, id: string) {
     const match = message.exec(line.body)
     if (!match) return line.text
     if ([match[1], match[4]].includes(id)) return ''
-    if (match[3] && affected.has(match[3] === '+' ? match[4] : match[1])) return line.text.replace(/(--?>>\s*)[+-]/, '$1')
+    if (match[3] && affected.has(match[3] === '+' ? match[4] : match[1])) return line.text.replace(/((?:--?>>|--x)\s*)[+-]/, '$1')
     return line.text
   }).join(sourceNewline(source))
 }

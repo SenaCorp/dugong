@@ -37,6 +37,7 @@ export interface DiagramEdge {
   target: string
   label?: string
   dashed?: boolean
+  sequenceEndMarker?: 'cross'
   technology?: string
   bidirectional?: boolean
   sequenceBranches?: SequenceBranchReference[]

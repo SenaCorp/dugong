@@ -73,6 +73,11 @@ export async function layoutSequence(graph: DiagramGraph, engine: ELK): Promise<
     style: { width: 2, height: timelineBottom - node.position.y - HEADER_HEIGHT - 12 }, zIndex: -1,
     data: { label: node.data.label, shape: 'lifeline', theme: node.data.theme, participantId: node.id, ports: [] },
   }))
+  const footers: FlowNode[] = participants.map(node => ({
+    ...node, id: `:footer:${node.id}`, type: 'sequenceFooter',
+    position: { x: node.position.x, y: timelineBottom }, selectable: false, draggable: false,
+    data: { ...node.data, participantId: node.id, ports: [] },
+  }))
   const edges: FlowEdge[] = graph.edges.map((edge, index) => {
     const from = byId.get(edge.source)!, to = byId.get(edge.target)!
     const sourceOffset = activationOffset(graph.sequence?.activations ?? [], edge.source, index, edge.sequenceBranches)
@@ -86,13 +91,13 @@ export async function layoutSequence(graph: DiagramGraph, engine: ELK): Promise<
       ...edge, type: 'diagram', zIndex: 1,
       label: messageLabel(index),
       sourceHandle: `:sequence:${edge.source}:out`, targetHandle: `:sequence:${edge.target}:in`,
-      markerEnd: { type: MarkerType.ArrowClosed, width: 11, height: 11, color: '#737c79' },
+      markerEnd: edge.sequenceEndMarker === 'cross' ? undefined : { type: MarkerType.ArrowClosed, width: 11, height: 11, color: '#737c79' },
       data: {
-        sourceLabel: edge.label, sequenceIndex: index, dashed: edge.dashed, sequenceBranches: edge.sequenceBranches,
+        sourceLabel: edge.label, sequenceIndex: index, dashed: edge.dashed, sequenceEndMarker: edge.sequenceEndMarker, sequenceBranches: edge.sequenceBranches,
         points: selfCall ? [{ x: x1, y }, { x: x1 + 65, y }, { x: x1 + 65, y: y + 28 }, { x: x1, y: y + 28 }] : [{ x: x1, y }, { x: x2, y }],
         labelPosition: selfCall ? { x: x1 + 65 + 16 + labelWidth(index) / 2, y: y + 14 } : { x: (x1 + x2) / 2, y: y - 17 },
       },
     }
   })
-  return { kind: 'sequence', nodes: [...decorations, ...frames, ...lifelines, ...participants], edges, sequenceFragments: graph.sequence?.fragments }
+  return { kind: 'sequence', nodes: [...decorations, ...frames, ...lifelines, ...participants, ...footers], edges, sequenceFragments: graph.sequence?.fragments }
 }
