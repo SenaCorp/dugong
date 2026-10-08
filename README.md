@@ -36,7 +36,7 @@ Start Docker Desktop (or another Docker engine), then run:
 docker compose up --build -d
 ```
 
-Open **http://localhost:8080**. Docker installs dependencies and builds the app with Node 22.22.3, then serves the production files through Nginx. No local Node installation is needed. This mode serves a production build; run the same command again after source changes to rebuild it.
+Open **http://localhost:8087**. Docker installs dependencies and builds the app with Node 22.22.3, then serves the production files through Nginx. No local Node installation is needed. This mode serves a production build; run the same command again after source changes to rebuild it.
 
 ```sh
 docker compose logs -f web    # View logs
@@ -50,9 +50,9 @@ To use a different host port:
 FLOWLAB_PORT=8081 docker compose up --build -d
 ```
 
-The container listens on port 8080 and exposes `/health` for its health check. Hashed assets, including Monaco and ELK workers, are served locally with long-lived cache headers; the page itself is revalidated. Missing asset paths return 404, and application paths fall back to the SPA entry page.
+The container listens on port 8087 and exposes `/health` for its health check. Hashed assets, including Monaco and ELK workers, are served locally with long-lived cache headers; the page itself is revalidated. Missing asset paths return 404, and application paths fall back to the SPA entry page.
 
-Diagram processing and storage remain in your browser. No database volume is needed. Browser storage is separate for each origin, so diagrams saved at `localhost:5173` are not automatically shared with `localhost:8080`.
+Diagram processing and storage remain in your browser. No database volume is needed. Browser storage is separate for each origin, so diagrams saved at `localhost:5173` are not automatically shared with `localhost:8087`.
 
 ## Supported syntax
 

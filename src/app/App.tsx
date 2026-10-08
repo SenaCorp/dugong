@@ -11,9 +11,9 @@ export default function App() {
   const [expanded, setExpanded] = useState(false)
   return <main className={`app-shell ${expanded ? 'preview-expanded' : ''}`}>
     <header className="app-header flex items-center justify-between">
-      <a className="wordmark flex items-center gap-2.5" href="./" aria-label="Flowlab workspace">
+      <a className="wordmark flex items-center gap-2.5" href="./" aria-label="DUGONG workspace">
         <svg viewBox="0 0 26 26" aria-hidden="true"><rect x="2" y="2" width="8" height="8" rx="2"/><rect x="16" y="16" width="8" height="8" rx="2"/><path d="M6 10v10h10M16 6h4v10"/><rect x="16" y="2" width="8" height="8" rx="2"/></svg>
-        <span>flowlab<span className="wordmark-dot">.</span></span>
+        <span className="wordmark-copy"><span className="wordmark-name">DUGONG</span><span className="wordmark-tagline">inspired by mermaid</span></span>
       </a>
       <span className="workspace-label hidden sm:block">DIAGRAM WORKSPACE</span>
       <div className="flex items-center gap-3">
