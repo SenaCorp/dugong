@@ -1,4 +1,4 @@
-# Flowlab
+# DUGONG
 
 A local diagram workspace: write a small Mermaid-like diagram language in Monaco and explore the result in React Flow. ELK automatically places nodes and routes separate orthogonal flowchart connections. Hover a node to highlight its incoming/outgoing connections and direct neighbors; the focused node gets a soft glow, active dashed edges carry a moving light, and unrelated elements fade. Neighbor nodes have a gentler halo. Effects follow the displayed route geometry, and reduced-motion preferences disable the moving light and dash animation.
 
@@ -50,9 +50,60 @@ To use a different host port:
 FLOWLAB_PORT=8081 docker compose up --build -d
 ```
 
-The container listens on port 8087 and exposes `/health` for its health check. Hashed assets, including Monaco and ELK workers, are served locally with long-lived cache headers; the page itself is revalidated. Missing asset paths return 404, and application paths fall back to the SPA entry page.
+The container listens on port 8087 and exposes `/health` for its health check. Hashed assets, including Monaco and ELK workers, are served locally with long-lived cache headers; the page itself is revalidated. The only public application route is `/`. `/index.html` redirects to `/`, and unknown paths return 404 to avoid duplicate workspace URLs and soft 404s.
 
 Diagram processing and storage remain in your browser. No database volume is needed. Browser storage is separate for each origin, so diagrams saved at `localhost:5173` are not automatically shared with `localhost:8087`.
+
+## Production analytics and Google indexing
+
+Production: **https://godtech.id/**. DUGONG uses Google Analytics 4 only, without an analytics dependency. No Microsoft Clarity, Hotjar, or session recording is integrated.
+
+### Build-time configuration
+
+Copy `.env.example` to `.env.local` for a local build, or set these values in your hosting provider's **build environment**:
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `VITE_GA_MEASUREMENT_ID` | Empty | Your GA4 web stream's actual `G-…` Measurement ID. Empty/invalid values disable analytics. |
+| `VITE_GA_DEBUG` | `false` | Set `true` only for a temporary DebugView verification build. |
+| `VITE_GA_ENABLE_LOCAL` | `false` | Explicitly allow analytics in a localhost **production preview**; `npm run dev` always disables tracking. |
+
+Vite embeds these public values at build time. Rebuild and redeploy after changes; changing the Nginx container's runtime environment does not update the JavaScript bundle. These IDs are not secrets. Do not put credentials in `VITE_*` variables. Docker Compose passes the settings as build arguments; provide them through the shell or Compose's `.env` and run `docker compose up --build -d`. For a direct image build, pass `--build-arg VITE_GA_MEASUREMENT_ID=<your actual ID>`.
+
+### Privacy and event inventory
+
+Analytics requires explicit **Allow analytics** consent. Before consent or after rejection, the application does not load Google's tag or queue product events. The consent panel has equally available Allow/Reject buttons, a Google privacy-policy link, and a persistent **Analytics preferences** control for withdrawal. Consent is stored locally for 180 days, without requiring working storage to use the app. DNT and Global Privacy Control suppress tracking. Advertising storage, advertising user data, personalization, and Google signals stay disabled.
+
+After consent, Google's script loads asynchronously. Configuration and one manually controlled `page_view` occur when it loads; default page views are disabled. Withdrawal disables GA collection, drops pending events and removes accessible first-party GA cookies. Requests already transmitted cannot be recalled. Consent changes in another tab apply through storage events. With unavailable storage, consent lasts only for that tab's current visit. A blocked script leaves the editor usable; pre-consent activity is never replayed.
+
+Only fixed diagram types, shipped example IDs, export formats, and playback trigger/stop categories are accepted. No diagram source, code, labels, participant names, node IDs, branch conditions, error messages, query strings, hashes, or referrer URLs are included in application payloads. GA4 still receives standard technical information associated with consented visits; this is usage analytics, not anonymous/offline operation. Page location is limited to the origin's `/` and page title is fixed.
+
+| Event | Trigger | Parameters |
+| --- | --- | --- |
+| `page_view` | First consented initialization on a page load | Fixed title, root URL, empty referrer |
+| `diagram_rendered` | First successful nonempty layout; explicit example/reset; successful type transition | `diagram_type` |
+| `diagram_type_selected` | A different diagram family successfully loads through an example or source header change | `diagram_type` |
+| `example_selected` | User selects a shipped example | `example_id` |
+| `flow_played` | Manual Play flow; first autoplay per loaded diagram/type/branch choice | `diagram_type`, `trigger` (`manual` / `automatic`) |
+| `flow_stopped` | Manual Stop or natural completion of a tracked playback | `diagram_type`, `reason` (`manual` / `completed`) |
+| `github_clicked` | User clicks the footer repository link | None |
+| `diagram_exported` | SVG/PNG export succeeds | `diagram_type`, `format` |
+
+`diagram_type` is one of `flowchart`, `sequence`, `c4`, `er`. Example IDs are stable identifiers from `src/features/diagram/examples/defaultDiagram.ts`. The example menu is the existing diagram-type switch; there is no separate type selector. Typing, hovering, pan/zoom, dragging, ordinary React renders and automatic layout refreshes do not generate analytics events. Playback ticks do not generate events. Initial render/activity before consent is intentionally not counted later. The application has no client router: there is one public route and no synthetic history listeners. If public routing is introduced later, add sanitized router-driven page views and update the canonical/sitemap together.
+
+### Manual Google setup checklist
+
+1. **Create GA4.** In [Google Analytics](https://analytics.google.com/), create/select an account and GA4 property, then add a Web data stream for `https://godtech.id/` named DUGONG. Copy that stream's real Measurement ID into `VITE_GA_MEASUREMENT_ID`.
+2. **Configure privacy before enabling the ID.** Turn **Enhanced measurement off** for this stream, including automatic page/history views, outbound links, form interactions, search, downloads and scrolls. DUGONG supplies its own events; automatic collection can duplicate events or capture user-controlled text/URLs. Do not enable user-provided data, Google signals, advertising integrations, or custom tags that read the editor. The stream settings are account-side and cannot be reliably disabled by this repository. See [Google's enhanced measurement settings](https://support.google.com/analytics/answer/9216061) and [basic consent mode](https://developers.google.com/tag-platform/security/guides/consent?consentmode=basic).
+3. **Deploy and validate GA4.** Rebuild with the actual ID. Open the app without a prior consent decision and confirm in DevTools Network that no requests go to `googletagmanager.com` / `google-analytics.com` before Allow or after Reject. Allow analytics, then select examples, play/stop and export. Check [Realtime](https://support.google.com/analytics/answer/9271392). For [DebugView](https://support.google.com/analytics/answer/7201382), use a temporary build with `VITE_GA_DEBUG=true`; consent is still required. For local checks use `npm run build` with `VITE_GA_ENABLE_LOCAL=true`, then `npm run preview`. Return both optional flags to `false` before production release. Inspect request payloads and verify one `page_view`, no typing/hover events and no source/labels/query/hash values. Register `diagram_type`, `example_id`, `format`, `trigger`, and `reason` as event-scoped custom dimensions if you need them in GA reports.
+4. **Verify Search Console ownership.** Open [Google Search Console](https://search.google.com/search-console), add a **Domain** property for `godtech.id`, copy Google's actual DNS TXT value into your DNS provider, wait for DNS propagation, and click Verify. Keep the TXT record. This recommended method needs no app environment variable. Alternatively, add a URL-prefix property for `https://godtech.id/`, download Google's actual HTML verification file into `public/` unchanged, rebuild/deploy, and verify the exact URL Google provides. An HTML meta-tag method is also supported by adding Google's actual `google-site-verification` tag to `index.html`'s head. Do not invent a token, use placeholders in deployed HTML, or remove an active verification record/file/tag. See [Google's ownership verification instructions](https://support.google.com/webmasters/answer/9008080).
+5. **Submit the sitemap.** Open Search Console → Sitemaps and submit `https://godtech.id/sitemap.xml`. It contains only the real indexable root page. Verify both `/robots.txt` and `/sitemap.xml` return their files with HTTP 200 and appropriate text/XML content types.
+6. **Request indexing.** Inspect `https://godtech.id/` using Search Console's URL Inspection, run Test live URL, verify crawling and indexing are allowed and the canonical is correct, then select Request indexing. Monitor Page indexing and canonical selection. A sitemap/request does not guarantee indexing or a particular ranking. See [URL Inspection](https://support.google.com/webmasters/answer/9012289).
+7. **Verify production SEO.** View the deployed HTML source, not only the browser's rendered DOM: check title, description, canonical, Open Graph/Twitter metadata, and `WebApplication` JSON-LD. Confirm `/social-preview.png` loads as a 1200×630 PNG. Check HTTP headers for unexpected `X-Robots-Tag: noindex`; public `/` must be indexable. The bundled Nginx redirects `/index.html` to `/`, blocks crawling of `/health`, marks the health response nonindexable, and returns 404 for nonexistent paths. Configure other hosting platforms similarly, redirect HTTP and alternate hosts to `https://godtech.id/`, and keep staging hosts out of the index. Inspect rendered HTML through Search Console to confirm the workspace remains visible after JavaScript runs.
+
+The static HTML includes crawler-readable product copy with an H1/H2 hierarchy before React loads; React replaces it with the existing workspace and an accessible product H1. Metadata describes the supported diagram subsets rather than full Mermaid compatibility. `public/robots.txt`, `public/sitemap.xml`, and the social card are copied into `dist/` by Vite. Structured data describes the application without fabricated reviews, ratings or rich-result eligibility claims. Social preview source: `public/social-preview.svg`; regenerate its PNG at 1200×630 when changing the artwork.
+
+Verification: `npm run lint`, `npm test`, and `npm run build`. Analytics tests cover consent, opt-outs, ID validation, async loading/withdrawal, page-view deduplication, sanitized payloads and render counting; playback tests cover lifecycle events and timers; SEO tests cover canonical/crawler files/structured data/social image. Live Google account configuration and actual indexing must be completed by the property owner after deployment.
 
 ## Supported syntax
 

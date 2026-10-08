@@ -28,7 +28,7 @@ export default function EditorPanel({ source, onChange, errors, layoutError }: E
 
   return <section className="editor-panel" aria-label="Diagram source">
     <div className="panel-header editor-header">
-      <span className="panel-title">Source</span>
+      <h2 className="panel-title">Source</h2>
       <span className="file-tab"><span className="code-symbol">&lt;/&gt;</span> diagram.mmd</span>
     </div>
     <div className="editor-body">

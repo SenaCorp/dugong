@@ -8,9 +8,10 @@ import { ReactFlowProvider } from '@xyflow/react'
 import { Toolbar } from './Toolbar'
 import { DiagramCanvas } from '../features/diagram/renderer/DiagramCanvas'
 import type { LayoutDiagram } from '../features/diagram/layout/flowTypes'
-import { useSequencePlayback } from '../features/diagram/hooks/useSequencePlayback'
+import { useSequencePlayback, type PlaybackEvent } from '../features/diagram/hooks/useSequencePlayback'
 import { exportDiagram } from '../features/diagram/export/exportDiagram'
-import { useMemo, useState, useRef } from 'react'
+import { useCallback, useMemo, useState, useRef } from 'react'
+import { trackEvent } from '../features/analytics/analytics'
 import { sequencePlaybackPath } from '../features/diagram/hooks/sequencePlaybackPath'
 import { isDecoration } from '../features/diagram/renderer/isDecoration'
 import { SequenceBranchControls } from './SequenceBranchControls'
@@ -18,6 +19,7 @@ import { SequenceBranchControls } from './SequenceBranchControls'
 const EMPTY_CHOICES: Readonly<Record<string, number>> = {}
 
 interface PreviewPanelProps {
+  analyticsSession?: number
   graph: DiagramGraph
   onSaveWorkspace: () => void
   workspaceSaved: boolean
@@ -39,7 +41,7 @@ interface PreviewPanelProps {
   expanded: boolean
   onToggleExpanded: () => void
 }
-export function PreviewPanel({ graph, onSaveWorkspace, workspaceSaved, storageError, documentRevision, onEdit, onMove, onAutoLayout, onUndo, onRedo, canUndo, canRedo, viewRevision, layout, revision, busy, hasErrors, onReset, expanded, onToggleExpanded }: PreviewPanelProps) {
+export function PreviewPanel({ analyticsSession = 0, graph, onSaveWorkspace, workspaceSaved, storageError, documentRevision, onEdit, onMove, onAutoLayout, onUndo, onRedo, canUndo, canRedo, viewRevision, layout, revision, busy, hasErrors, onReset, expanded, onToggleExpanded }: PreviewPanelProps) {
   const [inspecting, setInspecting] = useState(false)
   const [selectedId, select] = useState<string | null>(null)
   const [targetRecord, setTarget] = useState<(EditTarget & { revision: number }) | null>(null)
@@ -79,7 +81,10 @@ export function PreviewPanel({ graph, onSaveWorkspace, workspaceSaved, storageEr
   const onExport = async (format: 'svg' | 'png') => {
     if (!root.current || exporting) return
     setExporting(true); setExportError('')
-    try { await exportDiagram(root.current, layout, format) }
+    try {
+      await exportDiagram(root.current, layout, format)
+      trackEvent('diagram_exported', { diagram_type: layout.kind ?? 'flowchart', format })
+    }
     catch (error) { setExportError(error instanceof Error ? error.message : 'Export failed. Try again.') }
     finally { setExporting(false) }
   }
@@ -89,7 +94,12 @@ export function PreviewPanel({ graph, onSaveWorkspace, workspaceSaved, storageEr
   const [selection, setSelection] = useState<{ revision: number; choices: Record<string, number> }>({ revision, choices: {} })
   const choices = selection.revision === revision ? selection.choices : EMPTY_CHOICES
   const playbackIds = useMemo(() => sequencePlaybackPath(layout.edges.map(edge => ({ id: edge.id, sequenceBranches: edge.data?.sequenceBranches })), choices), [layout.edges, choices])
-  const playback = useSequencePlayback(playbackIds.length, `${revision}:${JSON.stringify(choices)}`, playable && !busy && !hasErrors)
+  const onPlaybackEvent = useCallback((event: PlaybackEvent) => {
+    const type = layout.kind ?? 'flowchart'
+    if (event.action === 'play') trackEvent('flow_played', { diagram_type: type, trigger: event.trigger })
+    else trackEvent('flow_stopped', { diagram_type: type, reason: event.reason })
+  }, [layout.kind])
+  const playback = useSequencePlayback(playbackIds.length, `${revision}:${JSON.stringify(choices)}`, playable && !busy && !hasErrors, onPlaybackEvent, `${analyticsSession}:${layout.kind}:${JSON.stringify(choices)}`)
   const activeMessageId = !target && !dragging && !connecting && playable && !busy && !hasErrors && playback.index !== null ? playbackIds[playback.index] ?? null : null
   return <section ref={root} data-theme={layout.theme ?? 'light'} className="preview-panel" aria-label="Diagram preview">
     <EditingContext.Provider value={editing}>

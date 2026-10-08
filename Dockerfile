@@ -5,6 +5,12 @@ COPY package.json package-lock.json ./
 RUN npm ci --include=dev --include=optional
 
 COPY . .
+ARG VITE_GA_MEASUREMENT_ID="55274541"
+ARG VITE_GA_DEBUG="false"
+ARG VITE_GA_ENABLE_LOCAL="false"
+ENV VITE_GA_MEASUREMENT_ID=$VITE_GA_MEASUREMENT_ID \
+    VITE_GA_DEBUG=$VITE_GA_DEBUG \
+    VITE_GA_ENABLE_LOCAL=$VITE_GA_ENABLE_LOCAL
 RUN npm run build
 
 FROM nginx:stable-alpine AS runtime

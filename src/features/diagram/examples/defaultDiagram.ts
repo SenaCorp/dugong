@@ -10,6 +10,7 @@ import c4Container from '../../../../samples/c4-container.mmd?raw'
 import c4Component from '../../../../samples/c4-component.mmd?raw'
 import c4Dynamic from '../../../../samples/c4-dynamic.mmd?raw'
 import c4Deployment from '../../../../samples/c4-deployment.mmd?raw'
+import type { DiagramType, ExampleId } from '../../analytics/events'
 
 export const DEFAULT_DIAGRAM = architectureSource.trim()
 export const LOGIN_SEQUENCE = loginSource.trim()
@@ -32,16 +33,16 @@ E --> F
 F --> D`
 
 export const DIAGRAM_EXAMPLES = [
-  { label: "Flowchart · Shape gallery", source: shapesSource.trim() },
-  { label: "Flowchart · Dark gallery", source: shapesSource.replace('theme: light', 'theme: dark').trim() },
-  { label: "Architecture", source: DEFAULT_DIAGRAM },
-  { label: "Flowchart · Styled connections", source: styledFlowchart.trim() },
-  { label: "Login sequence", source: LOGIN_SEQUENCE },
-  { label: "Sequence · Full login", source: annotatedLogin.trim() },
-  { label: "ER · Order database", source: erSource.trim() },
-  { label: "C4 · Context", source: c4Context.trim() },
-  { label: "C4 · Container", source: c4Container.trim() },
-  { label: "C4 · Component", source: c4Component.trim() },
-  { label: "C4 · Dynamic", source: c4Dynamic.trim() },
-  { label: "C4 · Deployment", source: c4Deployment.trim() },
-]
+  { id: 'shape-gallery', diagramType: 'flowchart', label: "Flowchart · Shape gallery", source: shapesSource.trim() },
+  { id: 'dark-gallery', diagramType: 'flowchart', label: "Flowchart · Dark gallery", source: shapesSource.replace('theme: light', 'theme: dark').trim() },
+  { id: 'architecture', diagramType: 'flowchart', label: "Architecture", source: DEFAULT_DIAGRAM },
+  { id: 'styled-flowchart', diagramType: 'flowchart', label: "Flowchart · Styled connections", source: styledFlowchart.trim() },
+  { id: 'login-sequence', diagramType: 'sequence', label: "Login sequence", source: LOGIN_SEQUENCE },
+  { id: 'full-login', diagramType: 'sequence', label: "Sequence · Full login", source: annotatedLogin.trim() },
+  { id: 'orders-er', diagramType: 'er', label: "ER · Order database", source: erSource.trim() },
+  { id: 'c4-context', diagramType: 'c4', label: "C4 · Context", source: c4Context.trim() },
+  { id: 'c4-container', diagramType: 'c4', label: "C4 · Container", source: c4Container.trim() },
+  { id: 'c4-component', diagramType: 'c4', label: "C4 · Component", source: c4Component.trim() },
+  { id: 'c4-dynamic', diagramType: 'c4', label: "C4 · Dynamic", source: c4Dynamic.trim() },
+  { id: 'c4-deployment', diagramType: 'c4', label: "C4 · Deployment", source: c4Deployment.trim() },
+] satisfies { id: ExampleId; diagramType: DiagramType; label: string; source: string }[]

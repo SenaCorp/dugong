@@ -1,5 +1,5 @@
 import { afterEach, expect, it, vi } from 'vitest'
-import { createSequencePlayback } from './useSequencePlayback'
+import { createSequencePlayback, createPlaybackEventTracker } from './useSequencePlayback'
 
 afterEach(() => vi.useRealTimers())
 it('plays messages in order, then stops', () => {
@@ -40,4 +40,36 @@ it('replay restarts at zero and never creates duplicate timers', () => {
   expect(vi.getTimerCount()).toBe(1)
   playback.play(0)
   expect(vi.getTimerCount()).toBe(0)
+})
+
+it('reports starts/stops once per transition, without tracking every playback tick or cleanup', () => {
+  vi.useFakeTimers()
+  const event = vi.fn()
+  const playback = createSequencePlayback(vi.fn(), event)
+  playback.play(3, 'automatic')
+  vi.advanceTimersByTime(3300)
+  expect(event.mock.calls).toEqual([[{ action: 'play', trigger: 'automatic' }], [{ action: 'stop', reason: 'completed' }]])
+  event.mockClear()
+  playback.play(3)
+  playback.stop()
+  playback.stop()
+  playback.dispose()
+  expect(event.mock.calls).toEqual([[{ action: 'play', trigger: 'manual' }], [{ action: 'stop', reason: 'manual' }]])
+})
+
+it('deduplicates StrictMode autoplay and ignores automatic refreshes while retaining manual playback events', () => {
+  const emit = vi.fn()
+  const observe = createPlaybackEventTracker()
+  const play = { action: 'play', trigger: 'automatic' } as const
+  const complete = { action: 'stop', reason: 'completed' } as const
+  observe(play, 'example-1', emit)
+  observe(play, 'example-1', emit) // StrictMode setup replay.
+  observe(complete, 'example-1', emit)
+  observe(play, 'example-1', emit) // Source edit / auto-layout.
+  observe(complete, 'example-1', emit)
+  expect(emit.mock.calls).toEqual([[play], [complete]])
+  observe({ action: 'play', trigger: 'manual' }, 'example-1', emit)
+  observe({ action: 'stop', reason: 'manual' }, 'example-1', emit)
+  observe(play, 'example-2', emit)
+  expect(emit).toHaveBeenCalledTimes(5)
 })

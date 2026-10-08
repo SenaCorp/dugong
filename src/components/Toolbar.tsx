@@ -7,7 +7,7 @@ export function Toolbar({ onAdd, onInspect, inspecting, onSaveWorkspace, workspa
   const { fitView } = useReactFlow()
   const previewState = hasErrors ? 'has-errors' : busy ? 'is-updating' : 'is-live'
   return <div className="panel-header preview-header">
-    <div className="preview-title"><span className="panel-title">Preview</span><span className={`preview-state ${previewState}`} role="status" aria-live="polite">
+    <div className="preview-title"><h2 className="panel-title">Preview</h2><span className={`preview-state ${previewState}`} role="status" aria-live="polite">
       <i aria-hidden="true" />{hasErrors ? 'Last valid' : busy ? 'Laying out' : 'Live'}
     </span></div>
     <div className="preview-actions">

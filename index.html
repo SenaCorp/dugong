@@ -4,11 +4,55 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="DUGONG — inspired by mermaid. Write diagrams in code and explore interactive architecture diagrams." />
-    <title>DUGONG — Diagram Workspace</title>
+    <title>DUGONG — Interactive Architecture Diagram Editor</title>
+    <meta name="description" content="Create and explore interactive architecture diagrams with animated connections, automatic layouts, and support for Flowcharts, Sequence, C4, and ER diagrams." />
+    <link rel="canonical" href="https://godtech.id/" />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="DUGONG" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:url" content="https://godtech.id/" />
+    <meta property="og:title" content="DUGONG — Interactive Architecture Diagram Editor" />
+    <meta property="og:description" content="Create and explore interactive architecture diagrams with animated connections, automatic layouts, and support for Flowcharts, Sequence, C4, and ER diagrams." />
+    <meta property="og:image" content="https://godtech.id/social-preview.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:alt" content="DUGONG interactive architecture diagram editor with connected client, API and database cards" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="DUGONG — Interactive Architecture Diagram Editor" />
+    <meta name="twitter:description" content="Create and explore interactive architecture diagrams with animated connections, automatic layouts, and support for Flowcharts, Sequence, C4, and ER diagrams." />
+    <meta name="twitter:image" content="https://godtech.id/social-preview.png" />
+    <meta name="twitter:image:alt" content="DUGONG interactive architecture diagram editor with connected client, API and database cards" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "DUGONG",
+        "url": "https://godtech.id/",
+        "description": "Create and explore interactive architecture diagrams with animated connections, automatic layouts, and support for Flowcharts, Sequence, C4, and ER diagrams.",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Any",
+        "browserRequirements": "Requires JavaScript and a modern web browser",
+        "isAccessibleForFree": true,
+        "featureList": ["Interactive flowcharts", "Sequence playback", "C4 architecture diagrams", "Entity relationship diagrams", "Automatic layouts", "SVG and PNG export"]
+      }
+    </script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <main style="max-width: 760px; margin: 48px auto; padding: 24px; font-family: system-ui, sans-serif; line-height: 1.6; color: #343c35">
+        <h1>DUGONG — Interactive Architecture Diagram Editor</h1>
+        <p>Create and explore interactive architecture diagrams with animated connections, automatic layouts, and support for Flowcharts, Sequence, C4, and ER diagrams.</p>
+        <h2>Write, arrange, and explore diagrams</h2>
+        <p>Edit diagram source, arrange nodes visually, trace connections, and play sequence and C4 dynamic flows. Automatic layouts help organize your architecture.</p>
+        <h2>Export and work locally</h2>
+        <p>Download SVG or PNG diagrams and save your workspace in your browser. Diagram source and processing stay on your device. Optional Google Analytics measures feature usage only after consent.</p>
+        <p>DUGONG supports documented subsets of Mermaid-inspired syntax for flowcharts, sequence, C4, and entity relationship diagrams.</p>
+        <a href="https://github.com/SenaCorp/dugong" rel="noopener noreferrer">Documentation and source on GitHub</a>
+        <noscript><p>Enable JavaScript to open the interactive editor.</p></noscript>
+      </main>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

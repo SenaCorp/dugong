@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import '@xyflow/react/dist/style.css'
 import './styles/globals.css'
 import App from './app/App'
+import { analytics } from './features/analytics/analytics'
 
 console.info(String.raw`
                                      /\             /\
@@ -16,14 +17,10 @@ console.info(String.raw`
                                    '.    '-------'  .'
                                        '-._______.-'
 
- ____       _     ____    ___   _____      _     __  __   ____       _     _   _ 
-| __ )     / \   | __ )  |_ _| |_   _|    / \   |  \/  | |  _ \     / \   | \ | |
-|  _ \    / _ \  |  _ \   | |    | |     / _ \  | |\/| | | |_) |   / _ \  |  \| |
-| |_) |  / ___ \ | |_) |  | |    | |    / ___ \ | |  | | |  __/   / ___ \ | |\  |
-|____/  /_/   \_\ |____/  |___|   |_|   /_/   \_\ |_|  |_| |_|     /_/   \_\ |_| \_|
-                                     Babitampan
+                                        Babitampan
 
-                                   made in Godean
+                                      made in Godean
 `)
 
+analytics.initialize()
 createRoot(document.getElementById('root')!).render(<StrictMode><App /></StrictMode>)

@@ -11,6 +11,7 @@ import { editSource, type SourceEdit } from '../editing/editSource'
 import { absolutePositions, applyManualPositions } from '../editing/manualLayout'
 import type { Point } from '../layout/flowTypes'
 import { DEFAULT_DIAGRAM, PREVIOUS_SAMPLE } from '../examples/defaultDiagram'
+import { createDiagramRenderTracker } from '../../analytics/diagramEvents'
 
 function readInitialWorkspace() {
   try {
@@ -28,6 +29,7 @@ interface DiagramState {
   revision: number
   processedSource: string
   viewRevision: number
+  analyticsSession: number
 }
 
 export function useDiagram() {
@@ -38,14 +40,17 @@ export function useDiagram() {
   const { source, setSource } = document
   const [resetVersion, setResetVersion] = useState(0)
   const request = useRef(0)
+  const analyticsSession = useRef(0)
+  const [observeRender] = useState(() => createDiagramRenderTracker())
   const [state, setState] = useState<DiagramState>({
     graph: { direction: 'LR', nodes: [], edges: [] }, layout: { nodes: [], edges: [] },
-    errors: [], layoutError: null, busy: true, revision: 0, processedSource: '', viewRevision: -1,
+    errors: [], layoutError: null, busy: true, revision: 0, processedSource: '', viewRevision: -1, analyticsSession: 0,
   })
 
   useEffect(() => {
     // Increment immediately: even results from a previous debounce must not commit.
     const version = ++request.current
+    const session = analyticsSession.current
     let cancelled = false
     const timer = window.setTimeout(async () => {
       try { localStorage.setItem(SOURCE_KEY, source) } catch { /* Storage can be disabled; editing still works. */ }
@@ -58,7 +63,7 @@ export function useDiagram() {
       try {
         const layout = await layoutDiagram(parsed.graph)
         if (cancelled || request.current !== version) return
-        setState(previous => ({ graph: parsed.graph, layout, errors: [], layoutError: null, busy: false, revision: previous.revision + 1, processedSource: source, viewRevision: resetVersion }))
+        setState(previous => ({ graph: parsed.graph, layout, errors: [], layoutError: null, busy: false, revision: previous.revision + 1, processedSource: source, viewRevision: resetVersion, analyticsSession: session }))
       } catch (error) {
         if (!cancelled && request.current === version) setState(previous => ({
           ...previous, busy: false, processedSource: source, layoutError: error instanceof Error ? error.message : 'Unable to lay out this diagram.',
@@ -68,8 +73,13 @@ export function useDiagram() {
     return () => { window.clearTimeout(timer); cancelled = true }
   }, [source, resetVersion])
 
+  useEffect(() => {
+    if (!state.busy && !state.errors.length && !state.layoutError && state.revision > 0) observeRender(state.analyticsSession, state.graph)
+  }, [state.busy, state.errors.length, state.layoutError, state.revision, state.analyticsSession, state.graph, observeRender])
+
   function loadExample(example: string) {
     request.current++
+    analyticsSession.current++
     document.resetDocument(example)
     setSavedDocument(null); setStorageError('')
     try { clearWorkspace(localStorage) } catch { setStorageError('Unable to clear saved workspace. Browser storage may be full or disabled.') }
